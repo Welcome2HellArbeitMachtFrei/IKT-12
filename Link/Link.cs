@@ -124,9 +124,16 @@ namespace Linklaget
 
 			//serialPort.Write (buf2Send,0,buf2Send.Length);
 
+			/*if(++errorCount == 1) // Simulate noise in DATA-package
+			{
+				sendBuf[1]++; // Important: Only spoil a checksum-field (buffer[0] or buffer[1])
+				Console.WriteLine("Noise! - byte #1 is spoiled in the first transmission");
+			} */
+
 			serialPort.BaseStream.WriteAsync(sendBuf,0,sendBuf.Length);
 
 		}
+
 
 		public static byte[] TrimEnd(byte[] array)
 		{
