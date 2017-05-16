@@ -111,6 +111,12 @@ namespace Linklaget
 				}
 			}
 
+			/*if(++errorCount == 1) // Simulate noise in DATA-package
+			{
+				sendBuf[1]++; // Important: Only spoil a checksum-field (buffer[0] or buffer[1])
+				Console.WriteLine("Noise! - byte #1 is spoiled in the first transmission");
+			} */
+
 			sendBuf [counter] = DELIMITERA;
 
 			Console.WriteLine ("\nLink send:\n" + (BytesToString(TrimEnd(sendBuf))));
@@ -128,18 +134,19 @@ namespace Linklaget
 
 		}
 
-				public static byte[] TrimEnd(byte[] array)
-				{
-					byte[] newArray = new byte [array.Length];
 
-					Array.Copy(array,newArray, array.Length);
+		public static byte[] TrimEnd(byte[] array)
+		{
+			byte[] newArray = new byte [array.Length];
 
-					int lastIndex = Array.FindLastIndex(array, b => b != 0);
+			Array.Copy(array,newArray, array.Length);
 
-					Array.Resize(ref newArray, lastIndex + 1);
+			int lastIndex = Array.FindLastIndex(array, b => b != 0);
 
-					return newArray;
-				}
+			Array.Resize(ref newArray, lastIndex + 1);
+
+			return newArray;
+		}
 
 		public static string BytesToString (byte[] byteArray)
 		{
