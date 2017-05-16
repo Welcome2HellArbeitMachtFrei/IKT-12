@@ -106,6 +106,13 @@ namespace Transportlaget
 				(ackType ? (byte)buffer [(int)TransCHKSUM.SEQNO] : (byte)(buffer [(int)TransCHKSUM.SEQNO] + 1) % 2);
 			ackBuf [(int)TransCHKSUM.TYPE] = (byte)(int)TransType.ACK;
 			checksum.calcChecksum (ref ackBuf, (int)TransSize.ACKSIZE);
+
+			if(++errorCount == 1) // Simulate noise in ACK-package
+			{
+				ackBuf[1]++; // Important: Only spoil a checksum-field (ackBuf[0] or ackBuf[1])
+				Console.WriteLine("Noise! byte #1 is spoiled in the first transmitted ACK-package");
+			}
+
 			link.send(ackBuf, (int)TransSize.ACKSIZE);
 		}
 
@@ -143,20 +150,12 @@ namespace Transportlaget
 				// Send it through link layer
 				link.send (temparray, newSize);
 
-				int timeoutCount = 0;
-
 
 				// Receive ack or resend
 				while (!receiveAck ()) {
 					// Send it through link layer
-					if (timeoutCount <= 5) {
 						Console.WriteLine ("Server requested resend of data due to bit errors");
 						link.send (temparray, newSize);
-					}
-					else
-						throw new TimeoutException("Tried resending 5 times. Client not responding.");
-
-					timeoutCount++;
 				}
 			}
 			else

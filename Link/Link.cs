@@ -183,14 +183,13 @@ namespace Linklaget
 
 					tempBuf [byteIndex] = (byte)serialPort.ReadByte ();
 
-
 					if (tempBuf [byteIndex] == DELIMITERA) {
 						foundLastFrame = true;
 						break;
 					}
 
 					byteIndex++;
-				};
+				}
 
 			}
 
