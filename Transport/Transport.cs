@@ -74,7 +74,7 @@ namespace Transportlaget
 		/// <returns>
 		/// The ack.
 		/// </returns>
-		private bool receiveAck(byte[] buffer)
+		private bool receiveAck()
 		{
 			recvSize = link.receive(ref buffer);
 			dataReceived = true;
@@ -138,23 +138,20 @@ namespace Transportlaget
 				// Calculate sum and low & high to index 0,1 ...
 				checksum.calcChecksum (ref temparray, newSize);
 
-
 				//Console.WriteLine("Transport sending:\n" + Link.BytesToString (temparray));
 
 				// Send it through link layer
 				link.send (temparray, newSize);
-				Byte[] reSendArray = new byte[newSize];
-				Array.Copy (temparray, 0, reSendArray, 0, temparray.Length);
 
 				int timeoutCount = 0;
 
 
 				// Receive ack or resend
-				while (!receiveAck (temparray)) {
+				while (!receiveAck ()) {
 					// Send it through link layer
 					if (timeoutCount <= 5) {
 						Console.WriteLine ("Server requested resend of data due to bit errors");
-						link.send (reSendArray, newSize);
+						link.send (temparray, newSize);
 					}
 					else
 						throw new TimeoutException("Tried resending 5 times. Client not responding.");
@@ -181,6 +178,12 @@ namespace Transportlaget
 
 				seqNo = buffer [(int)TransCHKSUM.SEQNO];
 
+				if (seqNo == old_seqNo) {
+					Console.WriteLine ("bit error in last ack package, ignoring data package");
+					sendAck (true);
+					continue;
+				}
+
 				// Send Ack
 				if (checksum.checkChecksum (buffer, recvSize)) {
 
@@ -188,6 +191,8 @@ namespace Transportlaget
 
 					// Send ack
 					sendAck (true);
+
+					old_seqNo = seqNo;
 
 					seqNo = (byte)((buffer [(int)TransCHKSUM.SEQNO] + 1) % 2);
 
